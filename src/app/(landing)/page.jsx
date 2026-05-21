@@ -1,30 +1,66 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { 
-  ArrowRight, 
-  ExternalLink, 
-  Sparkles, 
-  Layers, 
-  BarChart3, 
-  Palette, 
-  Moon, 
-  Smartphone, 
-  Search, 
-  Shield 
+import {
+  ArrowRight,
+  ExternalLink,
+  Sparkles,
+  Layers,
+  BarChart3,
+  Palette,
+  Moon,
+  Smartphone,
+  Search,
+  Shield,
+  CheckCircle,
+  ChevronRight,
+  Globe,
+  Users,
+  Zap,
+  Code,
+  Lock,
+  ArrowUpRight,
+  CheckCircle2,
+  ChevronDown,
+  Star,
+  Award,
+  Heart,
+  Lightbulb
 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 // Animation variants
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
+    transition: { duration: 0.6 }
+  }
+};
+
+const fadeInLeft = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6 }
+  }
+};
+
+const fadeInRight = {
+  hidden: { opacity: 0, x: 20 },
+  visible: {
+    opacity: 1,
+    x: 0,
     transition: { duration: 0.6 }
   }
 };
@@ -35,6 +71,78 @@ const staggerContainer = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1
+    }
+  }
+};
+
+const staggerFast = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06
+    }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.5 }
+  }
+};
+
+const popUp = {
+  hidden: { opacity: 0, scale: 0.8, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 260,
+      damping: 20,
+      duration: 0.6
+    }
+  }
+};
+
+const float = {
+  initial: { y: 0 },
+  animate: {
+    y: [-8, 8, -8],
+    transition: {
+      duration: 6,
+      repeat: Infinity,
+      repeatType: "loop",
+      ease: "easeInOut"
+    }
+  }
+};
+
+const spin = {
+  initial: { rotate: 0 },
+  animate: {
+    rotate: 360,
+    transition: {
+      duration: 20,
+      repeat: Infinity,
+      repeatType: "loop",
+      ease: "linear"
+    }
+  }
+};
+
+const drawPath = {
+  hidden: { pathLength: 0, opacity: 0 },
+  visible: {
+    pathLength: 1,
+    opacity: 1,
+    transition: {
+      pathLength: { duration: 1.5, ease: "easeInOut" },
+      opacity: { duration: 0.3 }
     }
   }
 };
@@ -82,6 +190,67 @@ const features = [
   }
 ];
 
+const howItWorks = [
+  {
+    step: 1,
+    title: "Sign up for free",
+    description: "Create your account in seconds with Google authentication.",
+    icon: <Users className="h-6 w-6" />
+  },
+  {
+    step: 2,
+    title: "Add your links",
+    description: "Add all your important links, social profiles, and content.",
+    icon: <Layers className="h-6 w-6" />
+  },
+  {
+    step: 3,
+    title: "Customize your page",
+    description: "Choose a theme, add your branding, and make it your own.",
+    icon: <Palette className="h-6 w-6" />
+  },
+  {
+    step: 4,
+    title: "Share with the world",
+    description: "Get your unique URL and share it everywhere.",
+    icon: <Globe className="h-6 w-6" />
+  }
+];
+
+const faqs = [
+  {
+    question: "Is OpenTree really free?",
+    answer: "Yes! OpenTree is 100% free and open-source. There are no premium features or hidden fees. All features are available to everyone."
+  },
+  {
+    question: "Can I customize my OpenTree page?",
+    answer: "Absolutely! You can customize your page with different themes, colors, fonts, and layouts. You can also add your own branding and profile picture."
+  },
+  {
+    question: "How do I track clicks and views?",
+    answer: "OpenTree includes built-in analytics that show you how many people have viewed your page and clicked on your links. You can access these analytics from your dashboard."
+  },
+  {
+    question: "Can I create multiple link pages?",
+    answer: "Yes, you can create multiple link pages for different purposes or audiences. Each page has its own unique URL."
+  },
+  {
+    question: "Is OpenTree mobile-friendly?",
+    answer: "Yes, OpenTree is fully responsive and works great on all devices, from mobile phones to desktop computers."
+  },
+  {
+    question: "Can I contribute to OpenTree?",
+    answer: "Absolutely! OpenTree is open-source and we welcome contributions. Check out our GitHub repository to get started."
+  }
+];
+
+const stats = [
+  { value: "10k+", label: "Active Users" },
+  { value: "1M+", label: "Monthly Views" },
+  { value: "5M+", label: "Links Clicked" },
+  { value: "100%", label: "Free Forever" }
+];
+
 const testimonials = [
   {
     quote: "OpenTree has completely transformed how I share my content. It's so easy to use and looks amazing!",
@@ -102,7 +271,7 @@ const testimonials = [
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
-  
+
   // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
@@ -116,14 +285,14 @@ export default function LandingPage() {
       <section className="relative py-20 md:py-32 overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 -z-10"></div>
-        
+
         {/* Animated background shapes */}
         <div className="absolute inset-0 -z-5">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 dark:bg-blue-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-blob"></div>
           <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-purple-400 dark:bg-purple-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
           <div className="absolute bottom-1/4 right-1/3 w-64 h-64 bg-pink-400 dark:bg-pink-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
             <motion.div
@@ -137,7 +306,7 @@ export default function LandingPage() {
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl">
                 OpenTree is a beautiful, free, and open-source platform for creators to share all their content in one place.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full">
                   <Link href="/signup">
@@ -152,8 +321,8 @@ export default function LandingPage() {
                 </Button>
               </div>
             </motion.div>
-            
-            <motion.div 
+
+            <motion.div
               className="mt-16 relative"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -191,7 +360,7 @@ export default function LandingPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors">
                         <div className="flex items-center mb-3">
@@ -202,7 +371,7 @@ export default function LandingPage() {
                         </div>
                         <p className="text-blue-100 text-sm">Check out my latest design work and projects</p>
                       </div>
-                      
+
                       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors">
                         <div className="flex items-center mb-3">
                           <svg className="w-5 h-5 text-blue-100 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -212,7 +381,7 @@ export default function LandingPage() {
                         </div>
                         <p className="text-blue-100 text-sm">Subscribe for weekly design tutorials and tips</p>
                       </div>
-                      
+
                       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors">
                         <div className="flex items-center mb-3">
                           <svg className="w-5 h-5 text-blue-100 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -222,7 +391,7 @@ export default function LandingPage() {
                         </div>
                         <p className="text-blue-100 text-sm">Get monthly updates on design trends and tools</p>
                       </div>
-                      
+
                       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-colors">
                         <div className="flex items-center mb-3">
                           <svg className="w-5 h-5 text-blue-100 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -236,7 +405,7 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Browser frame */}
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-8 bg-gray-800 dark:bg-gray-900 rounded-t-lg flex items-center px-4">
                 <div className="flex space-x-2">
@@ -263,8 +432,8 @@ export default function LandingPage() {
               OpenTree comes packed with all the features you need to create a beautiful link page.
             </p>
           </div>
-          
-          <motion.div 
+
+          <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
             variants={staggerContainer}
             initial="hidden"
@@ -272,7 +441,7 @@ export default function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
           >
             {features.map((feature, index) => (
-              <motion.div 
+              <motion.div
                 key={index}
                 className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300"
                 variants={fadeIn}
@@ -297,10 +466,10 @@ export default function LandingPage() {
               See what people are saying about OpenTree.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <motion.div 
+              <motion.div
                 key={index}
                 className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700"
                 initial={{ opacity: 0, y: 20 }}
